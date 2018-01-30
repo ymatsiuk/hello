@@ -7,7 +7,7 @@ FROM gruebel/upx:latest as upx
 COPY --from=builder /go/src/github.com/ymatsiuk/hello/hello /hello.orig
 RUN upx --best --lzma -o /hello /hello.orig
 
-FROM alpine:latest  
+FROM scratch
 COPY --from=upx /hello /hello
 CMD ["/hello"] 
 
