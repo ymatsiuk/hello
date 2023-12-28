@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// Create a new random number generator
-	rand.Seed(time.Now().UnixNano())
+	rg := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Create non-global registry.
 	registry := prometheus.NewRegistry()
@@ -27,8 +27,7 @@ func main() {
 	)
 
 	// Expose /metrics HTTP endpoint using the created custom registry.
-	http.Handle(
-		"/metrics",
+	http.Handle( "/metrics",
 		httpmiddleware.New(
 			registry, nil).
 			WrapHandler("/metrics", promhttp.HandlerFor(
@@ -45,7 +44,7 @@ func main() {
 				func() http.Handler {
 					return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						// Simulate DB ping for example up to 300ms
-						time.Sleep(time.Millisecond * time.Duration(rand.Intn(300)))
+						time.Sleep(time.Millisecond * time.Duration(rg.Intn(300)))
 						w.WriteHeader(http.StatusOK)
 						w.Write([]byte("OK"))
 					})
@@ -60,10 +59,10 @@ func main() {
 				func() http.Handler {
 					return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 						// Simulate some heavier work up to 1s
-						time.Sleep(time.Millisecond * time.Duration(rand.Intn(1000)))
+						time.Sleep(time.Millisecond * time.Duration(rg.Intn(1000)))
 
 						// Fail randomly to make it interesting
-						if rand.Intn(30) == 3 {
+						if rg.Intn(30) == 3 {
 							w.WriteHeader(http.StatusInternalServerError)
 							return
 						}
